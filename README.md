@@ -96,6 +96,10 @@ python app.py
 
 When a student begins the exam, the proctoring window opens and starts real-time monitoring using webcam feed.
 
+Access the admin panel  at
+
+http://127.0.0.1:8000/admin
+
 ## 📂 Important Notes on Files
 
 Ignored by Git (.gitignore):
