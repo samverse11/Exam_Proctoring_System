@@ -49,7 +49,7 @@ With the shift to remote education, ensuring exam honesty has become a growing c
 1️⃣ Clone the Repository
 
 git clone https://github.com/samverse11/Exam_Proctoring_System.git
-cd YOUR_REPO_NAME
+cd Exam_Proctoring_System
 
 2️⃣ Set Up Virtual Environment
 
