@@ -4,42 +4,42 @@ A secure, intelligent online exam system combining live proctoring with behavior
 
 ## ✅ Features at a Glance
 
--🎥 Real-time webcam stream monitoring
+- Real-time webcam stream monitoring
 
--🧠 Face recognition using face_recognition and dlib
+- Face recognition using face_recognition and dlib
 
--👥 Alert if multiple faces are detected
+- Alert if multiple faces are detected
 
--📵 Phone detection using YOLOv8 object detection
+- Phone detection using YOLOv8 object detection
 
--⛔ Exam termination upon suspicious activity
+- Exam termination upon suspicious activity
 
--📝 Activity logs saved to suspicious_activity_log.txt
+- Activity logs saved to suspicious_activity_log.txt
 
--🔐 Role-based login (Student, Admin/Proctor)
+- Role-based login (Student, Admin/Proctor)
 
--⚙️ Django-admin interface for exam setup and user management
+- Django-admin interface for exam setup and user management
 
 ## 💡 Motivation
 
 With the shift to remote education, ensuring exam honesty has become a growing challenge. Manual proctoring is tedious and limited. This platform leverages AI to offer:
 
--🚫 Automated violation detection
+- Automated violation detection
 
--🔍 Real-time monitoring without human invigilators
+- Real-time monitoring without human invigilators
 
--🔄 Smooth integration with frontend/backend
+- Smooth integration with frontend/backend
 
 ## 🛠 Tech Stack
 
 
-| 🧩 Component        | ⚙️ Tech Used                                      |
+|  Component        | Tech Used                                      |
 |---------------------|--------------------------------------------------|
-| 🎨 Frontend         | HTML, CSS                                        |
-| 🐍 Backend          | Django (Python)                                  |
-| 🤖 AI Proctoring    | OpenCV, dlib, face_recognition, YOLOv8           |
-| 🗃️ Database         | SQLite (default Django DB)                       |
-| 🚀 Deployment       | Localhost                                        |
+|  Frontend         | HTML, CSS                                        |
+|  Backend          | Django (Python)                                  |
+|  AI Proctoring    | OpenCV, dlib, face_recognition, YOLOv8           |
+|  Database         | SQLite (default Django DB)                       |
+|  Deployment       | Localhost                                        |
 
 
 ## ⚙️ Installation Guide (Tested on Python 3.10.8)
@@ -77,11 +77,11 @@ python manage.py createsuperuser
 
 ## 🚀 Running the System
 
-### 🖥 Terminal 1: Start Django Server
+###  Terminal 1: Start Django Server
 
 python manage.py runserver
 
-### 📷 Terminal 2: Launch Proctoring Module
+###  Terminal 2: Launch Proctoring Module
 
 cd testing
 python app.py
