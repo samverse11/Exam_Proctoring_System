@@ -67,6 +67,14 @@ If you face issues with dlib, manually build it:
 cd testing/dlib
 python setup.py install
 
+## 🧍‍♂️ Face Reference Setup
+
+To enable face recognition, add a clear frontal image of the test-taker in the `/testing/` folder.
+
+- Name the file exactly: `person1.jpg`
+- This image will be used for real-time face matching during the test.
+- Example: `testing/person1.jpg`
+
 ## 🧪 Django Setup
 
 Run the Following:
