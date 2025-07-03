@@ -101,19 +101,6 @@ Access the admin panel  at
 
 http://127.0.0.1:8000/admin
 
-## 📂 Important Notes on Files
-
-Ignored by Git (.gitignore):
-
-venv/ – your virtual environment
-
-__pycache__/ – Python cache files
-
-db.sqlite3 – database file (auto-generated after migrations)
-
-media/ – stores profile pictures and uploads
-
-
 ## 📝 Logs & Reports
 
 All suspicious activity is recorded in:
