@@ -62,7 +62,7 @@ source venv/bin/activate  # On Unix/macOS
 
 pip install -r requirements.txt
 
-💡 If you face issues with dlib, manually build it:
+If you face issues with dlib, manually build it:
 
 cd testing/dlib
 python setup.py install
@@ -86,7 +86,7 @@ python manage.py runserver
 cd testing
 python app.py
 
-🎯 When a student begins the exam, the proctoring window opens and starts real-time monitoring using webcam feed.
+When a student begins the exam, the proctoring window opens and starts real-time monitoring using webcam feed.
 
 ## 📂 Important Notes on Files
 
