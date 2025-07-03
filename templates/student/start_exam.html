@@ -1,0 +1,297 @@
+{% extends 'student/studentbase.html' %}
+{% block content %}
+{%load static%}
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <style>
+   #error-container {
+      display: none; /* Hidden by default, will be shown when an error occurs */
+      color: red;
+      margin-top: 20px;
+      background-color: #ffe6e6;
+      border: 1px solid red;
+      padding: 10px;
+    }
+
+    /* Centering the webcam feed */
+    .center-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    #webcam-container {
+      display: none;
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    video#webcam {
+      width: 100%;
+      max-width: 600px; /* Adjust as needed */
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+    #timer {
+      font-size: 1.5em;
+      color: red;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background-color: #ffe6e6;
+      padding: 10px 15px;
+      border-radius: 5px;
+    }
+  </style>
+  
+</head>
+<div class="center-container">
+  <!-- Timer Display -->
+  <div id="timer">
+    Time Remaining: <span id="time"></span>
+  </div>
+<!-- Alert container for displaying alerts -->
+<div id="alert-container" style="display: none;">
+  <h3>Alerts</h3>
+</div>
+
+<!-- Error container for displaying errors -->
+<div id="error-container" style="display: none;">
+  <h3>Errors</h3>
+</div>
+<div class="center-container">
+<!-- Webcam container -->
+<div id="webcam-container" style="display: none;">
+  <h3>Live Webcam Feed</h3>
+  <video id="webcam" autoplay playsinline></video>
+</div>
+
+
+
+<div class="jumbotron my-4">
+  <form class="form" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST" id="examForm">
+    {% csrf_token %}
+    <h1 style="text-align: center;">{{course.course_name}}</h1>
+    {% for q in questions %}
+    <h3 class="text-info">{{ forloop.counter }}. {{q.question}}</h3>
+    <h4 style="text-align: right;">[Marks {{q.marks}}]</h4>
+    
+    <div class="form-check mx-4">
+      <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option1}}" value="Option1">
+      <label class="form-check-label" for="option1">{{q.option1}}</label>
+    </div>
+    
+    <div class="form-check mx-4">
+      <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option2}}" value="Option2">
+      <label class="form-check-label" for="option2">{{q.option2}}</label>
+    </div>
+    
+    <div class="form-check mx-4">
+      <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option3 }}" value="Option3">
+      <label class="form-check-label" for="option3">{{q.option3}}</label>
+    </div>
+    
+    <div class="form-check mx-4">
+      <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option4 }}" value="Option4">
+      <label class="form-check-label" for="option4">{{q.option4}}</label>
+    </div>
+    {% endfor %}
+    
+    <input class="btn btn-info btn-lg" type="submit" value="Submit">
+  </form>
+</div>
+
+<script>
+  var formSubmitting = false;
+  let alertCount = 0; // Track the number of alerts received
+
+  function saveAns() {  
+    formSubmitting = true; 
+    var ele = document.getElementsByTagName('input'); 
+    for (i = 0; i < ele.length; i++) { 
+      if (ele[i].type == "radio" && ele[i].checked) {        
+        setCookie(ele[i].name, ele[i].value, 3); 
+      }
+    }
+    return true;
+  }
+
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+
+  // Auto-submit form on tab switch
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden && !formSubmitting) { 
+      alert("You have switched tabs! The test will now be submitted.");
+      document.getElementById('examForm').submit();
+    }
+  });
+
+  const examDuration = 15;  // Set to 30 minutes for this example
+  let remainingTime = examDuration * 60;  // Convert minutes to seconds
+
+  // Timer function
+  function startTimer() {
+    const timerDisplay = document.getElementById('time');
+
+    const timerInterval = setInterval(() => {
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+      if (remainingTime <= 0) {
+        clearInterval(timerInterval);
+        alert("Time is up! The exam will be submitted automatically.");
+        document.getElementById('examForm').submit();  // Auto-submit when time is up
+      }
+
+      remainingTime--;
+    }, 1000);
+  }
+
+  // Ensure canvas and video are initialized properly
+  let video, canvas, ctx;
+
+  // Start webcam feed and proctoring session when the page is loaded
+  window.onload = function() {
+    video = document.getElementById('webcam');
+    canvas = document.createElement('canvas');
+    ctx = canvas.getContext('2d');
+    startTimer(); 
+    startProctoring();
+  }
+
+  function startProctoring() {
+    fetch('http://localhost:5000/start_proctoring', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: "{{ request.user.id }}",  // Django user ID
+        course_id: "{{ course.id }}"       // Django course ID
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("Proctoring response received:", data);  // Debugging statement
+
+      if (data.message === "Proctoring started successfully") {
+        // Display webcam after proctoring starts
+        startWebcam();
+        setInterval(sendFrameToServer, 1000);  // Start sending frames every second
+      } else {
+        showError("Failed to start proctoring: " + data.error);
+      }
+    })
+    .catch(err => {
+      console.error("Error starting proctoring: " + err);
+      showError("Error starting proctoring: " + err);  // Call showError with the error
+    });
+  }
+
+  // Function to start webcam feed
+  function startWebcam() {
+    console.log("Starting webcam...");  // Debugging statement
+    document.getElementById('webcam-container').style.display = 'block';
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(function(stream) {
+      video.srcObject = stream;
+    })
+    .catch(function(err) {
+      console.error("Error accessing the camera: " + err);
+      showError("Error accessing the camera: " + err);  // Call showError with the webcam error
+    });
+  }
+
+  // Function to show error messages
+  function showError(message) {
+    console.log("Displaying error:", message);  // Debugging statement
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    errorContainer.style.display = 'block';
+    errorMessage.textContent = message;  // Display error dynamically
+  }
+
+  // Function to send frame data to Flask server
+  function sendFrameToServer() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const base64Image = canvas.toDataURL('image/jpeg');
+
+      fetch('http://localhost:5000/process_frame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ frame: base64Image })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.alerts && data.alerts.length > 0) {
+          displayAlerts(data.alerts);  // Show alerts
+          alertCount += data.alerts.length;  // Increment alert count
+
+          // Check if more than 3 alerts are detected
+          if (alertCount > 2) {
+            alert("More than 3 alerts detected. The form will be submitted automatically.");
+            document.getElementById('examForm').submit();  // Automatically submit the form
+          }
+        }
+
+        if (data.errors && data.errors.length > 0) {
+          displayErrors(data.errors);  // Show errors
+        }
+      })
+      .catch(err => {
+        console.error("Error sending frame to server:", err);
+      });
+    }
+  }
+
+  function displayAlerts(alerts) {
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.innerHTML = '';  // Clear previous alerts
+    alerts.forEach(alert => {
+      const alertElement = document.createElement('p');
+      alertElement.textContent = alert;
+      alertContainer.appendChild(alertElement);
+    });
+  }
+
+  function displayErrors(errors) {
+    const errorContainer = document.getElementById('error-container');
+    errorContainer.innerHTML = '';  // Clear previous errors
+    errors.forEach(error => {
+      const errorElement = document.createElement('p');
+      errorElement.textContent = error;
+      errorContainer.appendChild(errorElement);
+    });
+  }
+
+  // Send a frame every second
+  setInterval(sendFrameToServer, 1000);
+</script>
+
+
+
+
+{% endblock content %}

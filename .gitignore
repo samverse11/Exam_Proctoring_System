@@ -1,0 +1,14 @@
+env/
+venv/
+__pycache__/
+*.pyc
+# Ignore Python virtual environments
+
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+
+# OS and IDE files
+.DS_Store
+.vscode/
+*.egg-info/

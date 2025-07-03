@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proctoring System</title>
+    <style>
+        #alertBox {
+            display: none;
+            color: red;
+            font-weight: bold;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        #terminationMessage {
+            display: none;
+            color: red;
+            font-weight: bold;
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web-based Proctoring System</h1>
+    <div id="alertBox">Suspicious activity detected!</div>
+    <div id="terminationMessage">Proctoring session terminated due to suspicious activity!</div>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+        // Access webcam
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const alertBox = document.getElementById('alertBox');
+        const ctx = canvas.getContext('2d');
+    
+        // Get video feed from webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                video.srcObject = stream;
+            })
+            .catch(function (err) {
+                console.log("Error accessing the camera: " + err);
+            });
+    
+        // Capture frame and send to backend for processing
+        function sendFrameToServer() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+    
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const base64Image = canvas.toDataURL('image/jpeg');
+    
+                if (!base64Image || base64Image.length <= 22) {
+                    console.error("Error: Invalid frame data.");
+                    return;
+                }
+    
+                fetch('/process_frame', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ frame: base64Image })
+                })
+                .then(response => {
+                    console.log("Response status:", response.status); // Log the response status
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Processing result:", data);
+                    
+                    // Check for termination
+                    if (data.termination) {
+                        alertBox.innerText = `Proctoring session terminated: ${data.termination}`;
+                        alertBox.style.display = 'block'; // Show alert
+                        // Stop the video stream
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    } else {
+                        // Log any alerts received
+                        if (data.alerts && data.alerts.length > 0) {
+                            alertBox.innerText = `Alerts: ${data.alerts.join(', ')}`;
+                            alertBox.style.display = 'block'; // Show alert
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.log("Error sending frame to server: " + err);
+                });
+            }
+        }
+    
+          // Send a frame every second
+  setInterval(sendFrameToServer, 1000);
+    </script>
+    
+        
+</body>
+</html>

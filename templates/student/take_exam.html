@@ -1,0 +1,65 @@
+{% extends 'student/studentbase.html' %}
+{% block content %}
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+</head>
+<br><br>
+<div class="container my-4">
+  <div class="jumbotron">
+    <h3 class="text-info text-center">Before you start the Exam, here are the rules</h3>
+    <div class="row">
+      <div class="card border-info mx-4 my-4">
+        <div class="card-body text-info">
+          <h4 class="card-title">Exam Details :</h4>
+          <ul>
+            <li>Exam Name : {{course.course_name}}</li>
+            <li>Total Questions : {{total_questions}}</li>
+            <li>Total Marks : {{total_marks}}</li>
+          </ul>
+
+          <h4 class="card-title">Rules :</h4>
+          <ul>
+            <li>All questions are multiple choice.</li>
+            <li><span class="text-danger">Only one choice is correct.</span></li>
+            <li>Try to answer as quickly as you can.</li>
+            <li>Do not refresh the page during the exam.</li>
+          </ul>
+          
+
+          <a href="javascript:void(0)" class="btn btn-info" id="startExamBtn">Let's Start</a>
+        </div>
+        <div class="card-footer">Best Of Luck</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    $('#startExamBtn').click(function() {
+      $.ajax({
+   url: 'http://localhost:5000/start_proctoring',  // Flask server endpoint
+   type: 'POST',  // Correct method type
+   data: JSON.stringify({
+      'user_id': '{{ user.id }}',
+      'course_id': '{{ course.id }}'
+   }),
+   contentType: 'application/json',
+   success: function(response) {
+      if (response.message) {
+         window.location.href = '{% url "start-exam" course.id %}';
+      } else {
+         alert('Proctoring failed: ' + response.error);
+      }
+   },
+   error: function(xhr, status, error) {
+      console.log("Error Details:", xhr.responseText);  // Log the error for debugging
+      alert('Error connecting to the proctoring server.');
+   }
+});
+});
+  });
+</script>
+{% endblock content %}
